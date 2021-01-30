@@ -15,10 +15,11 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mod
     window.setWindowShouldClose(true)
   elif key == GLFWKey.Enter and action == GLFWPress:
     defer: isRed = not isRed
-    if not isRed:
-      bgColor = (235f, 64f, 52f).toRGB
-    else:
-      bgColor = (51f, 190f, 255f).toRGB
+    bgColor = 
+      if not isRed: 
+        (235f, 64f, 52f).toRGB 
+      else: 
+        (51f, 190f, 255f).toRGB
 
 
 proc main() =
