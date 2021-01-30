@@ -5,5 +5,6 @@ tasks:
   # add ~/.nimble/bin to PATH
   - init: 'echo "export PATH=$PATH:~/.nimble/bin" >> ~/.bashrc; 
           PATH=$PATH:~/.nimble/bin;
-          nimble install -y nimgl'
+          nimble refresh;
+          nimble install;'
     # command: ''
