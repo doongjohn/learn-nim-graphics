@@ -25,7 +25,7 @@ proc main() =
 
   while not w.windowShouldClose:
     glfwPollEvents()
-    glClearColor(0.68f, 1f, 0.34f, 1f)
+    glClearColor((51.0f / 255.0f), (190.0f / 255.0f), 1f, 1f)
     glClear(GL_COLOR_BUFFER_BIT)
     w.swapBuffers()
 
