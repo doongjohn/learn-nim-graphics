@@ -11,3 +11,4 @@ bin           = @["nim_stuff"]
 # Dependencies
 
 requires "nim >= 1.4.2"
+requires "nimgl"
