@@ -1,9 +1,25 @@
-import nimgl/[glfw, opengl]
+import nimgl/glfw
+import nimgl/opengl
 
-proc keyProc(window: GLFWWindow, key: int32, scancode: int32,
-             action: int32, mods: int32): void {.cdecl.} =
-  if key == GLFWKey.ESCAPE and action == GLFWPress:
+
+proc toRGB(vec: tuple[x, y, z: float32]): tuple[x, y, z: GLfloat] =
+  return (vec.x / 255f, vec.y / 255f, vec.z / 255f)
+
+
+var bgColor = (51f, 190f, 255f).toRGB
+var isRed = false
+
+
+proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
+  if key == GLFWKey.Escape and action == GLFWPress:
     window.setWindowShouldClose(true)
+  elif key == GLFWKey.Enter and action == GLFWPress:
+    defer: isRed = not isRed
+    if not isRed:
+      bgColor = (235f, 64f, 52f).toRGB
+    else:
+      bgColor = (51f, 190f, 255f).toRGB
+
 
 proc main() =
   assert glfwInit()
@@ -25,11 +41,12 @@ proc main() =
 
   while not w.windowShouldClose:
     glfwPollEvents()
-    glClearColor((51.0f / 255.0f), (190.0f / 255.0f), 1f, 1f)
+    glClearColor(bgColor.x, bgColor.y, bgColor.z, 1f)
     glClear(GL_COLOR_BUFFER_BIT)
     w.swapBuffers()
 
   w.destroyWindow()
   glfwTerminate()
+
 
 main()
