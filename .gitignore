@@ -3,5 +3,5 @@ nimblecache/
 htmldocs/
 
 # executables
-nim_stuff
-nim_stuff.exe
+app
+app.exe
