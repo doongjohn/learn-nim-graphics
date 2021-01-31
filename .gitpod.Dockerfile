@@ -4,7 +4,7 @@ USER gitpod
 # update
 RUN sudo apt-get update
 
-# install deps
+# install deps for x11
 RUN sudo apt-get install -y xorg-dev
 
 # install choosenim
