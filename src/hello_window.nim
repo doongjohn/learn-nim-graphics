@@ -21,22 +21,15 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
         vec3(51f, 190f, 255f).toRGB
 
 
-var vbo: uint32
-
-var vert = @[
-  -0.5f, -0.5f, 0.0f,
-   0.5f, -0.5f, 0.0f,
-   0.0f,  0.5f, 0.0f
-]
-
 proc main* =
   doAssert glfwInit()
 
+  # GLFW settings
   glfwWindowHint(GLFWContextVersionMajor, 3)
   glfwWindowHint(GLFWContextVersionMinor, 3)
-  glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # Used for Mac
-  glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE)
-  glfwWindowHint(GLFWResizable, GLFW_FALSE)
+  glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # To make MacOS happy
+  glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE) # We don't want the old OpenGL 
+  glfwWindowHint(GLFWResizable, GLFW_FALSE) # disable window resize
 
   let w: GLFWWindow = glfwCreateWindow(800, 600, "NimGL")
   if w == nil:
@@ -47,15 +40,13 @@ proc main* =
 
   doAssert glInit()
 
-  glGenBuffers(1, vbo.addr);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo)
-  glBufferData(GL_ARRAY_BUFFER, cint(cfloat.sizeof * vert.len), vert[0].addr, GL_STATIC_DRAW)
-
+  # app main loop
   while not w.windowShouldClose:
     glfwPollEvents()
     glClearColor(bgColor.x, bgColor.y, bgColor.z, 1f)
     glClear(GL_COLOR_BUFFER_BIT)
     w.swapBuffers()
-
+  
+  # app exit
   w.destroyWindow()
   glfwTerminate()

@@ -1,4 +1,4 @@
-import os
+import std/os
 import glm
 import nimgl/glfw
 import nimgl/opengl
@@ -23,11 +23,10 @@ proc main* =
   glfwWindowHint(GLFWContextVersionMinor, 3)
   glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # To make MacOS happy
   glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE) # We don't want the old OpenGL 
-  glfwWindowHint(GLFWResizable, GLFW_FALSE)
+  glfwWindowHint(GLFWResizable, GLFW_FALSE) # disable window resize
 
   # create window
   let w: GLFWWindow = glfwCreateWindow(800, 600, "NimGL", nil, nil)
-  # check window creation
   doAssert w != nil
 
   discard w.setKeyCallback(keyProc)
@@ -37,7 +36,7 @@ proc main* =
   doAssert glInit()
   printOpenGLVersion()
 
-  # Hello triangle!
+  # create vao
   var vao: uint32
   glGenVertexArrays(1, vao.addr)
   glBindVertexArray(vao)
@@ -53,23 +52,23 @@ proc main* =
   glGenBuffers(1, vertexbuffer.addr)
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer)
   glBufferData(GL_ARRAY_BUFFER, cint(cfloat.sizeof * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
-
-  var colors = (
-    bg: vec3(33f, 33f, 33f).toRgb(),
-  )
   
-  var programID = loadShaders(
-    shaderPath"triangle/vertex_shader",
-    shaderPath"triangle/fragment_shader"
-  )
-  glUseProgram(programID)
+  let vertShaderID = compileShader(GL_VERTEX_SHADER, shaderPath"triangle/vertex_shader")
+  let fragShaderID = compileShader(GL_FRAGMENT_SHADER, shaderPath"triangle/fragment_shader")
+  let programID = linkProgram(vertShaderID, fragShaderID)
 
-  # app loop
+  var bgColor = vec3(33f, 33f, 33f).toRgb
+
+  # app main loop
   while not w.windowShouldClose:
     # clear background
-    glClearColorRGB(colors.bg, 1f)
+    glClearColorRGB(bgColor, 1f)
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+    
+    # apply shader
+    glUseProgram(programID)
 
+    # draw triangle
     glEnableVertexAttribArray(0)
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer)
     glVertexAttribPointer(0, 3, EGL_FLOAT, false, 0, nil)

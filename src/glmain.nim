@@ -1,6 +1,8 @@
 import hello_window
-import hello_triangle
-import hello_square
+hello_window.main()
 
+# import hello_triangle
+# hello_triangle.main()
 
-hello_triangle.main()
+# import hello_square
+# hello_square.main()

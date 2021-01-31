@@ -25,7 +25,7 @@ proc main* =
   glfwWindowHint(GLFWContextVersionMinor, 3)
   glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # To make MacOS happy
   glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE) # We don't want the old OpenGL 
-  glfwWindowHint(GLFWResizable, GLFW_FALSE)
+  glfwWindowHint(GLFWResizable, GLFW_FALSE) # disable window resize
 
   # create window
   let w: GLFWWindow = glfwCreateWindow(800, 600, "NimGL", nil, nil)
@@ -73,31 +73,9 @@ proc main* =
   glEnableVertexAttribArray(0)
   glVertexAttribPointer(0'u32, 2, EGL_FLOAT, false, cfloat.sizeof * 2, nil)
 
-  var vertex: uint32 = glCreateShader(GL_VERTEX_SHADER)
-  var vsrc: cstring = static staticRead(shaderPath"square/vertex_shader")
-  glShaderSource(vertex, 1'i32, vsrc.addr, nil)
-  glCompileShader(vertex)
-  shaderCompileStatus(vertex)
-
-  var fragment: uint32 = glCreateShader(GL_FRAGMENT_SHADER)
-  var fsrc: cstring = static staticRead(shaderPath"square/fragment_shader")
-  glShaderSource(fragment, 1, fsrc.addr, nil)
-  glCompileShader(fragment)
-  shaderCompileStatus(fragment)
-
-  var program: uint32 = glCreateProgram()
-  glAttachShader(program, vertex)
-  glAttachShader(program, fragment)
-  glLinkProgram(program)
-
-  var log_length: int32
-  var message = newSeq[char](1024)
-  var pLinked: int32
-
-  glGetProgramiv(program, GL_LINK_STATUS, pLinked.addr);
-  if pLinked != GL_TRUE.ord:
-    glGetProgramInfoLog(program, 1024, log_length.addr, message[0].addr);
-    echo message
+  var vertex = compileShader(GL_VERTEX_SHADER, static shaderPath"square/vertex_shader")
+  var fragment = compileShader(GL_FRAGMENT_SHADER, static shaderPath"square/fragment_shader")
+  var program: uint32 = linkProgram(vertex, fragment)
 
   let uColor = glGetUniformLocation(program, "uColor")
   let uMVP = glGetUniformLocation(program, "uMVP")
@@ -107,7 +85,7 @@ proc main* =
     square: vec3(50f, 205f, 50f).toRgb()
   )
 
-  # app loop
+  # app main loop
   while not w.windowShouldClose:
     # clear background
     glClearColorRGB(colors.bg, 1f)
