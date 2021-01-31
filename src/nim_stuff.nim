@@ -1,20 +1,21 @@
 # Copyright 2018, NimGL contributors.
 
-# Hello square!
-
 import nimgl/glfw
 import nimgl/opengl
 import glm
 import os
 
+
 if os.getEnv("CI") != "":
   quit()
+
 
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
   if key == GLFWKey.Escape and action == GLFWPress:
     window.setWindowShouldClose(true)
   if key == GLFWKey.Space:
     glPolygonMode(GL_FRONT_AND_BACK, if action != GLFWRelease: GL_LINE else: GL_FILL)
+
 
 proc statusShader(shader: uint32) =
   var status: int32
@@ -26,8 +27,10 @@ proc statusShader(shader: uint32) =
     glGetShaderInfoLog(shader, 1024, log_length.addr, message[0].addr);
     echo message
 
+
 proc toRGB(vec: Vec3[float32]): Vec3[float32] =
   return vec3(vec.x / 255, vec.y / 255, vec.z / 255)
+
 
 proc main =
   # GLFW
@@ -53,20 +56,21 @@ proc main =
   glEnable(GL_BLEND)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
+  # Hello square!
   var
     mesh: tuple[vbo, vao, ebo: uint32]
     vertex  : uint32
     fragment: uint32
     program : uint32
 
-  var vert = @[
+  var vertices = @[
      0.3f,  0.3f,
      0.3f, -0.3f,
     -0.3f, -0.3f,
     -0.3f,  0.3f
   ]
 
-  var ind = @[
+  var indices = @[
     0'u32, 1'u32, 3'u32,
     1'u32, 2'u32, 3'u32
   ]
@@ -80,34 +84,20 @@ proc main =
   glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo)
 
-  glBufferData(GL_ARRAY_BUFFER, cint(cfloat.sizeof * vert.len), vert[0].addr, GL_STATIC_DRAW)
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, cint(cuint.sizeof * ind.len), ind[0].addr, GL_STATIC_DRAW)
+  glBufferData(GL_ARRAY_BUFFER, cint(cfloat.sizeof * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, cint(cuint.sizeof * indices.len), indices[0].addr, GL_STATIC_DRAW)
 
   glEnableVertexAttribArray(0)
   glVertexAttribPointer(0'u32, 2, EGL_FLOAT, false, cfloat.sizeof * 2, nil)
 
   vertex = glCreateShader(GL_VERTEX_SHADER)
-  var vsrc: cstring = """
-#version 330 core
-layout (location = 0) in vec2 aPos;
-uniform mat4 uMVP;
-void main() {
-  gl_Position = vec4(aPos, 0.0, 1.0) * uMVP;
-}
-  """
+  var vsrc: cstring = static: staticRead("../shaders/vertex_shader.glsl")
   glShaderSource(vertex, 1'i32, vsrc.addr, nil)
   glCompileShader(vertex)
   statusShader(vertex)
 
   fragment = glCreateShader(GL_FRAGMENT_SHADER)
-  var fsrc: cstring = """
-#version 330 core
-out vec4 FragColor;
-uniform vec3 uColor;
-void main() {
-  FragColor = vec4(uColor, 1.0f);
-}
-  """
+  var fsrc: cstring = static: staticRead("../shaders/fragment_shader.glsl")
   glShaderSource(fragment, 1, fsrc.addr, nil)
   glCompileShader(fragment)
   statusShader(fragment)
@@ -143,11 +133,11 @@ void main() {
     glUniformMatrix4fv(uMVP, 1, false, mvp.caddr)
 
     glBindVertexArray(mesh.vao)
-    glDrawElements(GL_TRIANGLES, ind.len.cint, GL_UNSIGNED_INT, nil)
+    glDrawElements(GL_TRIANGLES, indices.len.cint, GL_UNSIGNED_INT, nil)
 
     w.swapBuffers
     glfwPollEvents()
-
+  
   w.destroyWindow
 
   glfwTerminate()
@@ -155,5 +145,6 @@ void main() {
   glDeleteVertexArrays(1, mesh.vao.addr)
   glDeleteBuffers(1, mesh.vbo.addr)
   glDeleteBuffers(1, mesh.ebo.addr)
+
 
 main()
