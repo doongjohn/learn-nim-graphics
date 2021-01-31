@@ -17,13 +17,14 @@ proc main =
   if os.getEnv("CI") != "":
     quit()
 
-  # GLFW
+  # init GLFW
   doAssert glfwInit()
 
+  # GLFW settings
   glfwWindowHint(GLFWContextVersionMajor, 3)
   glfwWindowHint(GLFWContextVersionMinor, 3)
-  glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE)
-  glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE)
+  glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # To make MacOS happy
+  glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE) # We don't want the old OpenGL 
   glfwWindowHint(GLFWResizable, GLFW_FALSE)
 
   let w: GLFWWindow = glfwCreateWindow(800, 600, "NimGL", nil, nil)
@@ -32,11 +33,11 @@ proc main =
   discard w.setKeyCallback(keyProc)
   w.makeContextCurrent
 
-  # Opengl
+  # init OpenGL
   doAssert glInit()
+  printOpenGLVersion()
 
-  echo $glVersionMajor & "." & $glVersionMinor
-
+  # OpenGL settings
   glEnable(GL_BLEND)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
