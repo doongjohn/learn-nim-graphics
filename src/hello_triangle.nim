@@ -3,7 +3,7 @@ import glm
 import nimgl/glfw
 import nimgl/opengl
 import utils/gl
-# import utils/shader
+import utils/shader
 
 
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
@@ -37,10 +37,6 @@ proc main* =
   doAssert glInit()
   printOpenGLVersion()
 
-  # OpenGL settings
-  glEnable(GL_BLEND)
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
   # Hello triangle!
   var vao: uint32
   glGenVertexArrays(1, vao.addr)
@@ -60,15 +56,20 @@ proc main* =
 
   var colors = (
     bg: vec3(33f, 33f, 33f).toRgb(),
-    triangle: vec3(50f, 205f, 50f).toRgb()
   )
+  
+  var programID = loadShaders(
+    shaderPath"triangle/vertex_shader",
+    shaderPath"triangle/fragment_shader"
+  )
+  glUseProgram(programID)
 
   # app loop
   while not w.windowShouldClose:
     # clear background
     glClearColorRGB(colors.bg, 1f)
-    glClear(GL_COLOR_BUFFER_BIT)
-    
+    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+
     glEnableVertexAttribArray(0)
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer)
     glVertexAttribPointer(0, 3, EGL_FLOAT, false, 0, nil)

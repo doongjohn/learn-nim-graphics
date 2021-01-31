@@ -12,7 +12,7 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
     mods: int32): void {.cdecl.} =
   if key == GLFWKey.Escape and action == GLFWPress:
     window.setWindowShouldClose(true)
-  elif key == GLFWKey.Enter and action == GLFWPress:
+  elif key == GLFWKey.Space and action == GLFWPress:
     defer: isRed = not isRed
     bgColor =
       if not isRed:
