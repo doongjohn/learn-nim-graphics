@@ -1,4 +1,4 @@
-# nim-stuff
+# Learning Computer Graphics with Nim!
 
 Fun with 👑**NIM** programming language!
 
