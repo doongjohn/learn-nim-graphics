@@ -1,12 +1,10 @@
+import glm
 import nimgl/glfw
 import nimgl/opengl
+import utils/gl
 
 
-proc toRGB(vec: tuple[x, y, z: float32]): tuple[x, y, z: GLfloat] =
-  return (vec.x / 255f, vec.y / 255f, vec.z / 255f)
-
-
-var bgColor = (51f, 190f, 255f).toRGB
+var bgColor = vec3(51f, 190f, 255f).toRGB
 var isRed = false
 
 
@@ -18,21 +16,21 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
     defer: isRed = not isRed
     bgColor =
       if not isRed:
-        (235f, 64f, 52f).toRGB
+        vec3(235f, 64f, 52f).toRGB
       else:
-        (51f, 190f, 255f).toRGB
+        vec3(51f, 190f, 255f).toRGB
 
 
 var vbo: uint32
 
 var vert = @[
   -0.5f, -0.5f, 0.0f,
-  0.5f, -0.5f, 0.0f,
-  0.0f, 0.5f, 0.0f
+   0.5f, -0.5f, 0.0f,
+   0.0f,  0.5f, 0.0f
 ]
 
-proc main*() =
-  assert glfwInit()
+proc main* =
+  doAssert glfwInit()
 
   glfwWindowHint(GLFWContextVersionMajor, 3)
   glfwWindowHint(GLFWContextVersionMinor, 3)
@@ -47,7 +45,7 @@ proc main*() =
   discard w.setKeyCallback(keyProc)
   w.makeContextCurrent()
 
-  assert glInit()
+  doAssert glInit()
 
   glGenBuffers(1, vbo.addr);
   glBindBuffer(GL_ARRAY_BUFFER, vbo)
@@ -61,6 +59,3 @@ proc main*() =
 
   w.destroyWindow()
   glfwTerminate()
-
-
-main()
