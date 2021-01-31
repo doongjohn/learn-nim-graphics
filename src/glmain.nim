@@ -1,10 +1,9 @@
+import os
+import glm
 import nimgl/glfw
 import nimgl/opengl
-import glm
-import os
-
-
-template shaderPath(path: string): string = "../shaders/" & path & ".glsl"
+import utils/gl
+import utils/shader
 
 
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
@@ -12,25 +11,6 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mod
     window.setWindowShouldClose(true)
   if key == GLFWKey.Space:
     glPolygonMode(GL_FRONT_AND_BACK, if action != GLFWRelease: GL_LINE else: GL_FILL)
-
-
-proc statusShader(shader: uint32) =
-  var status: int32
-  glGetShaderiv(shader, GL_COMPILE_STATUS, status.addr);
-  if status != GL_TRUE.ord:
-    var
-      log_length: int32
-      message = newSeq[char](1024)
-    glGetShaderInfoLog(shader, 1024, log_length.addr, message[0].addr);
-    echo message
-
-
-proc toRGB(vec: Vec3[float32]): Vec3[float32] =
-  vec3(vec.x / 255, vec.y / 255, vec.z / 255)
-
-
-template glClearColorRGB(rgb: Vec3[float32], alpha: float32) =
-  glClearColor(rgb.r, rgb.b, rgb.b, alpha)
 
 
 proc main =
@@ -94,13 +74,13 @@ proc main =
   var vsrc: cstring = static staticRead(shaderPath"vertex_shader")
   glShaderSource(vertex, 1'i32, vsrc.addr, nil)
   glCompileShader(vertex)
-  statusShader(vertex)
+  shaderCompileStatus(vertex)
 
   var fragment: uint32 = glCreateShader(GL_FRAGMENT_SHADER)
   var fsrc: cstring = static staticRead(shaderPath"fragment_shader")
   glShaderSource(fragment, 1, fsrc.addr, nil)
   glCompileShader(fragment)
-  statusShader(fragment)
+  shaderCompileStatus(fragment)
 
   var program: uint32 = glCreateProgram()
   glAttachShader(program, vertex)
