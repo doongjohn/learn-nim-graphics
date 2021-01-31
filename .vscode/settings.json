@@ -1,0 +1,25 @@
+{
+    "git.autofetch": true,
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.colorTheme": "Mayukai Dark",
+    "editor.fontFamily": "'JetBrains Mono Regular', Consolas, 'Courier New', monospace",
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": "meta.preprocessor.pragma.nim",
+                "settings": {
+                    "foreground": "#979797"
+                }
+            },
+            {
+                "scope": [
+                    "punctuation.pragma.start.nim",
+                    "punctuation.pragma.end.nim",
+                ],
+                "settings": {
+                    "foreground": "#646464"
+                }
+            }
+        ]
+    },
+}

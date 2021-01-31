@@ -1,13 +1,7 @@
-# Copyright 2018, NimGL contributors.
-
 import nimgl/glfw
 import nimgl/opengl
 import glm
 import os
-
-
-if os.getEnv("CI") != "":
-  quit()
 
 
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
@@ -33,6 +27,9 @@ proc toRGB(vec: Vec3[float32]): Vec3[float32] =
 
 
 proc main =
+  if os.getEnv("CI") != "":
+    quit()
+
   # GLFW
   doAssert glfwInit()
 
@@ -57,11 +54,7 @@ proc main =
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
   # Hello square!
-  var
-    mesh: tuple[vbo, vao, ebo: uint32]
-    vertex  : uint32
-    fragment: uint32
-    program : uint32
+  var mesh: tuple[vbo, vao, ebo: uint32]
 
   var vertices = @[
      0.3f,  0.3f,
@@ -90,19 +83,19 @@ proc main =
   glEnableVertexAttribArray(0)
   glVertexAttribPointer(0'u32, 2, EGL_FLOAT, false, cfloat.sizeof * 2, nil)
 
-  vertex = glCreateShader(GL_VERTEX_SHADER)
-  var vsrc: cstring = static: staticRead("../shaders/vertex_shader.glsl")
+  var vertex: uint32 = glCreateShader(GL_VERTEX_SHADER)
+  var vsrc: cstring = static staticRead("../shaders/vertex_shader.glsl")
   glShaderSource(vertex, 1'i32, vsrc.addr, nil)
   glCompileShader(vertex)
   statusShader(vertex)
 
-  fragment = glCreateShader(GL_FRAGMENT_SHADER)
-  var fsrc: cstring = static: staticRead("../shaders/fragment_shader.glsl")
+  var fragment: uint32 = glCreateShader(GL_FRAGMENT_SHADER)
+  var fsrc: cstring = static staticRead("../shaders/fragment_shader.glsl")
   glShaderSource(fragment, 1, fsrc.addr, nil)
   glCompileShader(fragment)
   statusShader(fragment)
 
-  program = glCreateProgram()
+  var program: uint32 = glCreateProgram()
   glAttachShader(program, vertex)
   glAttachShader(program, fragment)
   glLinkProgram(program)
