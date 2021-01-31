@@ -4,6 +4,9 @@ import glm
 import os
 
 
+template shaderPath(path: string): string = "../shaders/" & path & ".glsl"
+
+
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
   if key == GLFWKey.Escape and action == GLFWPress:
     window.setWindowShouldClose(true)
@@ -23,7 +26,11 @@ proc statusShader(shader: uint32) =
 
 
 proc toRGB(vec: Vec3[float32]): Vec3[float32] =
-  return vec3(vec.x / 255, vec.y / 255, vec.z / 255)
+  vec3(vec.x / 255, vec.y / 255, vec.z / 255)
+
+
+template glClearColorRGB(rgb: Vec3[float32], alpha: float32) =
+  glClearColor(rgb.r, rgb.b, rgb.b, alpha)
 
 
 proc main =
@@ -84,13 +91,13 @@ proc main =
   glVertexAttribPointer(0'u32, 2, EGL_FLOAT, false, cfloat.sizeof * 2, nil)
 
   var vertex: uint32 = glCreateShader(GL_VERTEX_SHADER)
-  var vsrc: cstring = static staticRead("../shaders/vertex_shader.glsl")
+  var vsrc: cstring = static staticRead(shaderPath"vertex_shader")
   glShaderSource(vertex, 1'i32, vsrc.addr, nil)
   glCompileShader(vertex)
   statusShader(vertex)
 
   var fragment: uint32 = glCreateShader(GL_FRAGMENT_SHADER)
-  var fsrc: cstring = static staticRead("../shaders/fragment_shader.glsl")
+  var fsrc: cstring = static staticRead(shaderPath"fragment_shader")
   glShaderSource(fragment, 1, fsrc.addr, nil)
   glCompileShader(fragment)
   statusShader(fragment)
@@ -100,25 +107,25 @@ proc main =
   glAttachShader(program, fragment)
   glLinkProgram(program)
 
-  var
-    log_length: int32
-    message = newSeq[char](1024)
-    pLinked: int32
+  var log_length: int32
+  var message = newSeq[char](1024)
+  var pLinked: int32
+
   glGetProgramiv(program, GL_LINK_STATUS, pLinked.addr);
   if pLinked != GL_TRUE.ord:
     glGetProgramInfoLog(program, 1024, log_length.addr, message[0].addr);
     echo message
 
-  let
-    uColor = glGetUniformLocation(program, "uColor")
-    uMVP   = glGetUniformLocation(program, "uMVP")
-  var
-    bg    = vec3(33f, 33f, 33f).toRgb()
-    color = vec3(50f, 205f, 50f).toRgb()
-    mvp   = ortho(-2f, 2f, -1.5f, 1.5f, -1f, 1f)
+  let uColor = glGetUniformLocation(program, "uColor")
+  let uMVP = glGetUniformLocation(program, "uMVP")
+  var clearColor = vec3(33f, 33f, 33f).toRgb()
+  var color = vec3(50f, 205f, 50f).toRgb()
+  var mvp = ortho(-2f, 2f, -1.5f, 1.5f, -1f, 1f)
 
+  # app loop
   while not w.windowShouldClose:
-    glClearColor(bg.r, bg.g, bg.b, 1f)
+    # clear background
+    glClearColorRGB(clearColor, 1f)
     glClear(GL_COLOR_BUFFER_BIT)
 
     glUseProgram(program)
@@ -132,7 +139,6 @@ proc main =
     glfwPollEvents()
   
   w.destroyWindow
-
   glfwTerminate()
 
   glDeleteVertexArrays(1, mesh.vao.addr)
