@@ -2,7 +2,7 @@
     "git.autofetch": true,
     "workbench.iconTheme": "material-icon-theme",
     "workbench.colorTheme": "Mayukai Dark",
-    "editor.fontFamily": "'JetBrains Mono Regular', Consolas, 'Courier New', monospace",
+    "editor.fontFamily": "'JetBrains Mono Light', Consolas, 'Courier New', monospace",
     "editor.tokenColorCustomizations": {
         "textMateRules": [
             {
