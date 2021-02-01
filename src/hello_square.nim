@@ -44,17 +44,6 @@ proc main* =
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
   # Hello square!
-  var mesh: tuple[vbo, vao, ebo: uint32]
-
-  glGenBuffers(1, mesh.vbo.addr)
-  glGenBuffers(1, mesh.ebo.addr)
-  glGenVertexArrays(1, mesh.vao.addr)
-
-  glBindVertexArray(mesh.vao)
-
-  glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo)
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo)
-
   var vertices = @[
      0.3f,  0.3f,
      0.3f, -0.3f,
@@ -67,18 +56,24 @@ proc main* =
     1'u32, 2'u32, 3'u32
   ]
 
-  glBufferData(GL_ARRAY_BUFFER, cint(cfloat.sizeof * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, cint(cuint.sizeof * indices.len), indices[0].addr, GL_STATIC_DRAW)
+  var mesh: tuple[vbo, vao, ebo: uint32]
+  mesh.vao = gl.genVertexArrays(1)
+  mesh.vbo = gl.genBuffers(1)
+  glBindVertexArray(mesh.vao)
+  glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo)
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo)
+  glBufferData(GL_ARRAY_BUFFER, cint(sizeof(cfloat) * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, cint(sizeof(cuint) * indices.len), indices[0].addr, GL_STATIC_DRAW)
 
   glEnableVertexAttribArray(0)
   glVertexAttribPointer(0'u32, 2, EGL_FLOAT, false, cfloat.sizeof * 2, nil)
 
-  var vertex = compileShader(GL_VERTEX_SHADER, static shaderPath"square/vertex_shader")
-  var fragment = compileShader(GL_FRAGMENT_SHADER, static shaderPath"square/fragment_shader")
-  var program: uint32 = linkProgram(vertex, fragment)
+  var vertShaderID = compileShader(GL_VERTEX_SHADER, static shaderPath"square/vertex_shader")
+  var fragShaderID = compileShader(GL_FRAGMENT_SHADER, static shaderPath"square/fragment_shader")
+  var programID: uint32 = linkProgram(vertShaderID, fragShaderID)
 
-  let uColor = glGetUniformLocation(program, "uColor")
-  let uMVP = glGetUniformLocation(program, "uMVP")
+  let uColor = glGetUniformLocation(programID, "uColor")
+  let uMVP = glGetUniformLocation(programID, "uMVP")
   var mvp = ortho(-2f, 2f, -1.5f, 1.5f, -1f, 1f)
   var colors = (
     bg: vec3(33f, 33f, 33f).toRgb(),
@@ -91,9 +86,9 @@ proc main* =
     glClearColorRGB(colors.bg, 1f)
     glClear(GL_COLOR_BUFFER_BIT)
 
-    glUseProgram(program)
-    glUniform3fv(uColor, 1, colors.square.caddr)
+    glUseProgram(programID)
     glUniformMatrix4fv(uMVP, 1, false, mvp.caddr)
+    glUniform3fv(uColor, 1, colors.square.caddr)
 
     glBindVertexArray(mesh.vao)
     glDrawElements(GL_TRIANGLES, indices.len.cint, GL_UNSIGNED_INT, nil)

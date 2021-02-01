@@ -56,7 +56,6 @@ proc main* =
   let vertShaderID = compileShader(GL_VERTEX_SHADER, shaderPath"triangle/vertex_shader")
   let fragShaderID = compileShader(GL_FRAGMENT_SHADER, shaderPath"triangle/fragment_shader")
   let programID = linkProgram(vertShaderID, fragShaderID)
-
   var bgColor = vec3(33f, 33f, 33f).toRgb
 
   # app main loop

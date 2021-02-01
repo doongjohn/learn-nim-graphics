@@ -12,3 +12,15 @@ proc toRGB*(vec: Vec3[float32]): Vec3[float32] =
 
 template glClearColorRGB*(rgb: Vec3[float32], alpha: float32) =
   glClearColor(rgb.r, rgb.b, rgb.b, alpha)
+
+
+template genVertexArrays*(n: GLsizei): var uint32 =
+  var vao: uint32
+  glGenVertexArrays(n, vao.addr)
+  vao
+
+
+template genBuffers*(n: GLsizei): var uint32 =
+  var vbo: uint32
+  glGenBuffers(n, vbo.addr)
+  vbo

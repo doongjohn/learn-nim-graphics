@@ -43,8 +43,8 @@ proc main* =
     vec3f(1, 0, 0)
   )
 
-  var vao = glGenVao(1)
-  var vbo = glGenVbo(1)
+  var vao = gl.genVertexArrays(1)
+  var vbo = gl.genBuffers(1)
   glBindVertexArray(vao)
   glBindBuffer(GL_ARRAY_BUFFER, vbo)
   glBufferData(GL_ARRAY_BUFFER, cint(sizeof(cfloat) * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
