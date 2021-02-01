@@ -13,9 +13,6 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mod
 
 
 proc main* =
-  if os.getEnv("CI") != "":
-    quit()
-
   # init GLFW
   doAssert glfwInit()
 
@@ -44,19 +41,21 @@ proc main* =
   )
 
   var vao = gl.genVertexArrays(1)
-  var vbo = gl.genBuffers(1)
   glBindVertexArray(vao)
+
+  var vbo = gl.genBuffers(1)
   glBindBuffer(GL_ARRAY_BUFFER, vbo)
   glBufferData(GL_ARRAY_BUFFER, cint(sizeof(cfloat) * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
 
   glVertexAttribPointer(0, 3, EGL_FLOAT, false, sizeof(cfloat) * 3, nil)
   glEnableVertexAttribArray(0)
+
   glBindBuffer(GL_ARRAY_BUFFER, 0)
   glBindVertexArray(0)
 
-  var vertShaderID = compileShader(GL_VERTEX_SHADER, static shaderPath"square/vertex_shader")
-  var fragShaderID = compileShader(GL_FRAGMENT_SHADER, static shaderPath"square/fragment_shader")
-  var programID: uint32 = linkProgram(vertShaderID, fragShaderID)
+  let vertShaderID = compileShader(GL_VERTEX_SHADER, static shaderPath"square/vertex_shader")
+  let fragShaderID = compileShader(GL_FRAGMENT_SHADER, static shaderPath"square/fragment_shader")
+  let programID = linkProgram(vertShaderID, fragShaderID)
 
   let uColor = glGetUniformLocation(programID, "uColor")
   let uMVP = glGetUniformLocation(programID, "uMVP")
@@ -68,6 +67,8 @@ proc main* =
 
   # app main loop
   while not w.windowShouldClose:
+    glfwPollEvents()
+
     # clear background
     glClearColorRGB(colors.bg, 1f)
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
@@ -84,7 +85,6 @@ proc main* =
 
     # swap buffers
     w.swapBuffers()
-    glfwPollEvents()
   
   # app exit
   w.destroyWindow()

@@ -6,15 +6,15 @@ import utils/gl
 import utils/shader
 
 
+var bgColor = vec3(33f, 33f, 33f).toRgb
+
+
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
   if key == GLFWKey.Escape and action == GLFWPress:
     window.setWindowShouldClose(true)
 
 
 proc main* =
-  if os.getEnv("CI") != "":
-    quit()
-
   # init GLFW
   doAssert glfwInit()
 
@@ -36,11 +36,6 @@ proc main* =
   doAssert glInit()
   printOpenGLVersion()
 
-  # create vao
-  var vao: uint32
-  glGenVertexArrays(1, vao.addr)
-  glBindVertexArray(vao)
-
   # my first triangle!
   var vertices = @[
     -1.0f, -1.0f, 0.0f,
@@ -48,35 +43,39 @@ proc main* =
      0.0f,  1.0f, 0.0f,
   ]
 
-  var vertexBuffer: uint32
-  glGenBuffers(1, vertexbuffer.addr)
-  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer)
+  # create vao
+  var vao = gl.genVertexArrays(1)
+  glBindVertexArray(vao)
+
+  # create vbo
+  var vbo = gl.genBuffers(1)
+  glBindBuffer(GL_ARRAY_BUFFER, vbo)
   glBufferData(GL_ARRAY_BUFFER, cint(cfloat.sizeof * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
-  
+
   let vertShaderID = compileShader(GL_VERTEX_SHADER, shaderPath"triangle/vertex_shader")
   let fragShaderID = compileShader(GL_FRAGMENT_SHADER, shaderPath"triangle/fragment_shader")
   let programID = linkProgram(vertShaderID, fragShaderID)
-  var bgColor = vec3(33f, 33f, 33f).toRgb
 
   # app main loop
   while not w.windowShouldClose:
+    glfwPollEvents()
+
     # clear background
     glClearColorRGB(bgColor, 1f)
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
     
-    # apply shader
+    # use shader
     glUseProgram(programID)
 
     # draw triangle
     glEnableVertexAttribArray(0)
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer)
+    glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glVertexAttribPointer(0, 3, EGL_FLOAT, false, 0, nil)
     glDrawArrays(GL_TRIANGLES, 0, 3)
     glDisableVertexAttribArray(0)
 
     # swap buffers
     w.swapBuffers()
-    glfwPollEvents()
   
   # app exit
   w.destroyWindow()

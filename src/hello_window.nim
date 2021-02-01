@@ -4,21 +4,20 @@ import nimgl/opengl
 import utils/gl
 
 
-var bgColor = vec3(51f, 190f, 255f).toRGB
-var isRed = false
+var colors =(
+  skyblue: vec3f(51, 190, 255).toRGB,
+  lightpink: vec3f(235, 64, 52).toRGB
+)
+var bgColor = colors.skyblue
 
 
-proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
-    mods: int32): void {.cdecl.} =
+proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
+  var isPink {.global.} = false
   if key == GLFWKey.Escape and action == GLFWPress:
     window.setWindowShouldClose(true)
   elif key == GLFWKey.Space and action == GLFWPress:
-    defer: isRed = not isRed
-    bgColor =
-      if not isRed:
-        vec3(235f, 64f, 52f).toRGB
-      else:
-        vec3(51f, 190f, 255f).toRGB
+    defer: isPink = not isPink
+    bgColor = (if isPink: colors.skyblue else: colors.lightpink)
 
 
 proc main* =

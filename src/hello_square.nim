@@ -6,6 +6,12 @@ import utils/gl
 import utils/shader
 
 
+var colors = (
+  bg: vec3f(33, 33, 33).toRgb,
+  square: vec3f(50, 205, 50).toRgb
+)
+
+
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
   if key == GLFWKey.Escape and action == GLFWPress:
     window.setWindowShouldClose(true)
@@ -14,9 +20,6 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mod
 
 
 proc main* =
-  if os.getEnv("CI") != "":
-    quit()
-
   # init GLFW
   doAssert glfwInit()
 
@@ -57,10 +60,13 @@ proc main* =
   ]
 
   var mesh: tuple[vbo, vao, ebo: uint32]
+
   mesh.vao = gl.genVertexArrays(1)
-  mesh.vbo = gl.genBuffers(1)
   glBindVertexArray(mesh.vao)
+  
+  mesh.vbo = gl.genBuffers(1)
   glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo)
+  
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo)
   glBufferData(GL_ARRAY_BUFFER, cint(sizeof(cfloat) * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, cint(sizeof(cuint) * indices.len), indices[0].addr, GL_STATIC_DRAW)
@@ -68,20 +74,18 @@ proc main* =
   glEnableVertexAttribArray(0)
   glVertexAttribPointer(0'u32, 2, EGL_FLOAT, false, cfloat.sizeof * 2, nil)
 
-  var vertShaderID = compileShader(GL_VERTEX_SHADER, static shaderPath"square/vertex_shader")
-  var fragShaderID = compileShader(GL_FRAGMENT_SHADER, static shaderPath"square/fragment_shader")
-  var programID: uint32 = linkProgram(vertShaderID, fragShaderID)
+  let vertShaderID = compileShader(GL_VERTEX_SHADER, static shaderPath"square/vertex_shader")
+  let fragShaderID = compileShader(GL_FRAGMENT_SHADER, static shaderPath"square/fragment_shader")
+  let programID: uint32 = linkProgram(vertShaderID, fragShaderID)
 
   let uColor = glGetUniformLocation(programID, "uColor")
   let uMVP = glGetUniformLocation(programID, "uMVP")
   var mvp = ortho(-2f, 2f, -1.5f, 1.5f, -1f, 1f)
-  var colors = (
-    bg: vec3(33f, 33f, 33f).toRgb(),
-    square: vec3(50f, 205f, 50f).toRgb()
-  )
 
   # app main loop
   while not w.windowShouldClose:
+    glfwPollEvents()
+
     # clear background
     glClearColorRGB(colors.bg, 1f)
     glClear(GL_COLOR_BUFFER_BIT)
@@ -95,7 +99,6 @@ proc main* =
 
     # swap buffers
     w.swapBuffers()
-    glfwPollEvents()
   
   # app exit
   w.destroyWindow()
