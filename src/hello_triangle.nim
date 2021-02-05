@@ -37,24 +37,33 @@ proc main* =
   printOpenGLVersion()
 
   # my first triangle!
-  var vertices = @[
+  var vertices = [
     -1.0f, -1.0f, 0.0f,
      1.0f, -1.0f, 0.0f,
      0.0f,  1.0f, 0.0f,
   ]
 
   # create vao
-  var vao = gl.genVertexArrays(1)
-  glBindVertexArray(vao)
+  #var vao = gl.genVertexArrays(1)
+  #glBindVertexArray(vao)
 
   # create vbo
   var vbo = gl.genBuffers(1)
   glBindBuffer(GL_ARRAY_BUFFER, vbo)
   glBufferData(GL_ARRAY_BUFFER, cint(cfloat.sizeof * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
 
-  let vertShaderID = compileShader(GL_VERTEX_SHADER, shaderPath"triangle/vertex_shader")
-  let fragShaderID = compileShader(GL_FRAGMENT_SHADER, shaderPath"triangle/fragment_shader")
-  let programID = linkProgram(vertShaderID, fragShaderID)
+  glEnableVertexAttribArray(0)
+  glVertexAttribPointer(0, 3, EGL_FLOAT, false, 0, nil)
+
+  # compile shaders
+  let programID = linkProgram(
+    compileShader(
+      GL_VERTEX_SHADER,
+      shaderPath"triangle/vertex_shader"),
+    compileShader(
+      GL_FRAGMENT_SHADER,
+      shaderPath"triangle/fragment_shader")
+  )
 
   # app main loop
   while not w.windowShouldClose:
@@ -68,11 +77,9 @@ proc main* =
     glUseProgram(programID)
 
     # draw triangle
-    glEnableVertexAttribArray(0)
-    glBindBuffer(GL_ARRAY_BUFFER, vbo)
-    glVertexAttribPointer(0, 3, EGL_FLOAT, false, 0, nil)
+    #glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glDrawArrays(GL_TRIANGLES, 0, 3)
-    glDisableVertexAttribArray(0)
+    #glDisableVertexAttribArray(0)
 
     # swap buffers
     w.swapBuffers()
@@ -81,4 +88,4 @@ proc main* =
   w.destroyWindow()
   glfwTerminate()
 
-  glDeleteVertexArrays(1, vao.addr)
+  #glDeleteVertexArrays(1, vao.addr)

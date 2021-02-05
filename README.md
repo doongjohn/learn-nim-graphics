@@ -24,3 +24,8 @@ OpenGL 2D Line
 ## In-depth look
 
 About `glDetachShader()` [📃](https://gamedev.stackexchange.com/questions/47910/after-a-succesful-gllinkprogram-should-i-delete-detach-my-shaders)
+glBindBuffer: it will select a buffer to work with
+
+vertex: may contain positions, texture cordinates, normal, etc...
+
+stride: size of a vertex
