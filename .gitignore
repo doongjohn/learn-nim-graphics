@@ -3,4 +3,5 @@ nimblecache/
 htmldocs/
 
 # executables
+glmain
 *.exe
