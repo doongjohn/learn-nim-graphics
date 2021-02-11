@@ -1,8 +1,8 @@
 {
     "git.autofetch": true,
     "workbench.iconTheme": "material-icon-theme",
-    "workbench.colorTheme": "Mayukai Dark",
-    "editor.fontFamily": "'JetBrains Mono Light', Consolas, 'Courier New', monospace",
+    "workbench.colorTheme": "Mayukai Mirage Darker",
+    "editor.fontFamily": "'Jetbrains Mono', '나눔스퀘어라운드 Regular', Consolas, 'Courier New', monospace",
     "editor.tokenColorCustomizations": {
         "textMateRules": [
             {

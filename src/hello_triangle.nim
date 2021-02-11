@@ -1,12 +1,8 @@
-import std/os
 import glm
 import nimgl/glfw
 import nimgl/opengl
+import utils
 import utils/gl
-import utils/shader
-
-
-var bgColor = vec3(33f, 33f, 33f).toRgb
 
 
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
@@ -34,58 +30,77 @@ proc main* =
 
   # init OpenGL
   doAssert glInit()
-  printOpenGLVersion()
+  gl.printOpenGLVersion()
 
   # my first triangle!
-  var vertices = [
-    -1.0f, -1.0f, 0.0f,
-     1.0f, -1.0f, 0.0f,
-     0.0f,  1.0f, 0.0f,
+  let vpositions = [
+    vec3f(-0.5, -0.5, 0.0),
+    vec3f( 0.5, -0.5, 0.0),
+    vec3f( 0.0,  0.5, 0.0)
   ]
+  let vcolors = [
+    vec4f(1, 0, 0, 1),
+    vec4f(0, 1, 0, 1),
+    vec4f(0, 0, 1, 1)
+  ]
+  var vertices = ...(
+    vpositions[0], vcolors[0],
+    vpositions[1], vcolors[1],
+    vpositions[2], vcolors[2]
+  )
 
   # create vao
-  #var vao = gl.genVertexArrays(1)
-  #glBindVertexArray(vao)
-
+  var vao = gl.genVertexArrays(1)
+  glBindVertexArray(vao)
+  
   # create vbo
   var vbo = gl.genBuffers(1)
   glBindBuffer(GL_ARRAY_BUFFER, vbo)
-  glBufferData(GL_ARRAY_BUFFER, cint(cfloat.sizeof * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
+  glBufferData(GL_ARRAY_BUFFER, cint(sizeof(cfloat) * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
 
+  # set vertex positions
   glEnableVertexAttribArray(0)
-  glVertexAttribPointer(0, 3, EGL_FLOAT, false, 0, nil)
-
+  glVertexAttribPointer(0, 3, EGL_FLOAT, false, 7 * sizeof(cfloat), nil)
+  
+  # set vertex colors
+  glEnableVertexAttribArray(1)
+  glVertexAttribPointer(1, 4, EGL_FLOAT, false, 7 * sizeof(cfloat), cast[pointer](3 * sizeof(cfloat)))
+  
+  # deselect vbo, vao
+  glBindBuffer(GL_ARRAY_BUFFER, 0)
+  glBindVertexArray(0)
+  
   # compile shaders
   let programID = linkProgram(
-    compileShader(
-      GL_VERTEX_SHADER,
-      shaderPath"triangle/vertex_shader"),
-    compileShader(
-      GL_FRAGMENT_SHADER,
-      shaderPath"triangle/fragment_shader")
+    compileShader(GL_VERTEX_SHADER, ~"shaders/triangle/vertex_shader.glsl"),
+    compileShader(GL_FRAGMENT_SHADER, ~"shaders/triangle/fragment_shader.glsl")
   )
 
   # app main loop
   while not w.windowShouldClose:
-    glfwPollEvents()
-
     # clear background
-    glClearColorRGB(bgColor, 1f)
+    gl.clearColorRGB(vec3f(33, 33, 33).toRGB, 1f)
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
     
     # use shader
     glUseProgram(programID)
 
-    # draw triangle
-    #glBindBuffer(GL_ARRAY_BUFFER, vbo)
-    glDrawArrays(GL_TRIANGLES, 0, 3)
-    #glDisableVertexAttribArray(0)
+    # select vao
+    glBindVertexArray(vao)
+    glDrawArrays(GL_TRIANGLES, 0, 3) # draw triangle
+    
+    # deselect vao
+    glBindVertexArray(0)
 
+    
     # swap buffers
     w.swapBuffers()
-  
+
+    # poll events
+    glfwPollEvents()
+    
   # app exit
   w.destroyWindow()
   glfwTerminate()
 
-  #glDeleteVertexArrays(1, vao.addr)
+  glDeleteVertexArrays(1, vao.addr)

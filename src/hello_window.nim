@@ -15,7 +15,7 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mod
   var isPink {.global.} = false
   if key == GLFWKey.Escape and action == GLFWPress:
     window.setWindowShouldClose(true)
-  elif key == GLFWKey.Space and action == GLFWPress:
+  if key == GLFWKey.Space and action == GLFWPress:
     defer: isPink = not isPink
     bgColor = (if isPink: colors.skyblue else: colors.lightpink)
 
@@ -42,7 +42,7 @@ proc main* =
   # app main loop
   while not w.windowShouldClose:
     glfwPollEvents()
-    glClearColor(bgColor.x, bgColor.y, bgColor.z, 1f)
+    gl.clearColorRGB(bgColor, 1f)
     glClear(GL_COLOR_BUFFER_BIT)
     w.swapBuffers()
   

@@ -1,15 +1,8 @@
-import os
 import glm
 import nimgl/glfw
 import nimgl/opengl
+import utils
 import utils/gl
-import utils/shader
-
-
-var colors = (
-  bg: vec3f(33, 33, 33).toRgb,
-  square: vec3f(50, 205, 50).toRgb
-)
 
 
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
@@ -20,90 +13,86 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mod
 
 
 proc main* =
-  # init GLFW
+  # GLFW
   doAssert glfwInit()
 
-  # GLFW settings
   glfwWindowHint(GLFWContextVersionMajor, 3)
   glfwWindowHint(GLFWContextVersionMinor, 3)
-  glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # To make MacOS happy
-  glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE) # We don't want the old OpenGL
-  glfwWindowHint(GLFWResizable, GLFW_FALSE) # disable window resize
+  glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE)
+  glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE)
+  glfwWindowHint(GLFWResizable, GLFW_FALSE)
 
-  # create window
   let w: GLFWWindow = glfwCreateWindow(800, 600, "NimGL", nil, nil)
-  # check window creation
   doAssert w != nil
 
   discard w.setKeyCallback(keyProc)
-  w.makeContextCurrent()
+  w.makeContextCurrent
 
-  # init OpenGL
+  # Opengl
   doAssert glInit()
-  printOpenGLVersion()
+  gl.printOpenGLVersion()
 
-  # OpenGL settings
   glEnable(GL_BLEND)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-  # Hello square!
-  var vertices = @[
+  var mesh: tuple[vbo, vao, ebo: uint32]
+  var vert = [
      0.3f,  0.3f,
      0.3f, -0.3f,
     -0.3f, -0.3f,
     -0.3f,  0.3f
   ]
-
-  var indices = @[
+  var ind = [
     0'u32, 1'u32, 3'u32,
     1'u32, 2'u32, 3'u32
   ]
 
-  var mesh: tuple[vbo, vao, ebo: uint32]
+  glGenBuffers(1, mesh.vbo.addr)
+  glGenBuffers(1, mesh.ebo.addr)
+  glGenVertexArrays(1, mesh.vao.addr)
 
-  mesh.vao = gl.genVertexArrays(1)
   glBindVertexArray(mesh.vao)
-  
-  mesh.vbo = gl.genBuffers(1)
+
   glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo)
-  
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo)
-  glBufferData(GL_ARRAY_BUFFER, cint(sizeof(cfloat) * vertices.len), vertices[0].addr, GL_STATIC_DRAW)
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, cint(sizeof(cuint) * indices.len), indices[0].addr, GL_STATIC_DRAW)
+
+  glBufferData(GL_ARRAY_BUFFER, cint(sizeof(cfloat) * vert.len), vert[0].addr, GL_STATIC_DRAW)
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, cint(sizeof(cuint) * ind.len), ind[0].addr, GL_STATIC_DRAW)
 
   glEnableVertexAttribArray(0)
-  glVertexAttribPointer(0'u32, 2, EGL_FLOAT, false, cfloat.sizeof * 2, nil)
-
-  let vertShaderID = compileShader(GL_VERTEX_SHADER, static shaderPath"square/vertex_shader")
-  let fragShaderID = compileShader(GL_FRAGMENT_SHADER, static shaderPath"square/fragment_shader")
-  let programID: uint32 = linkProgram(vertShaderID, fragShaderID)
+  glVertexAttribPointer(0'u32, 2, EGL_FLOAT, false, sizeof(cfloat) * 2, nil)
+  
+  let programID = linkProgram(
+    compileShader(GL_VERTEX_SHADER, static ~"shaders/square/vertex_shader.glsl"),
+    compileShader(GL_FRAGMENT_SHADER, static ~"shaders/square/fragment_shader.glsl"),
+  )
 
   let uColor = glGetUniformLocation(programID, "uColor")
   let uMVP = glGetUniformLocation(programID, "uMVP")
   var mvp = ortho(-2f, 2f, -1.5f, 1.5f, -1f, 1f)
+  var colors = (
+    bg: vec3f(33, 33, 33).toRGB,
+    square: vec3f(50, 205, 50).toRGB
+  )
 
-  # app main loop
   while not w.windowShouldClose:
-    glfwPollEvents()
-
-    # clear background
-    glClearColorRGB(colors.bg, 1f)
+    gl.clearColorRGB(colors.bg, 1f)
     glClear(GL_COLOR_BUFFER_BIT)
 
     glUseProgram(programID)
-    glUniformMatrix4fv(uMVP, 1, false, mvp.caddr)
     glUniform3fv(uColor, 1, colors.square.caddr)
+    glUniformMatrix4fv(uMVP, 1, false, mvp.caddr)
 
     glBindVertexArray(mesh.vao)
-    glDrawElements(GL_TRIANGLES, indices.len.cint, GL_UNSIGNED_INT, nil)
+    glDrawElements(GL_TRIANGLES, ind.len.cint, GL_UNSIGNED_INT, nil)
 
-    # swap buffers
-    w.swapBuffers()
-  
-  # app exit
-  w.destroyWindow()
+    w.swapBuffers
+    glfwPollEvents()
+
+  w.destroyWindow
   glfwTerminate()
 
   glDeleteVertexArrays(1, mesh.vao.addr)
   glDeleteBuffers(1, mesh.vbo.addr)
   glDeleteBuffers(1, mesh.ebo.addr)
+
