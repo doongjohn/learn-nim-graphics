@@ -11,7 +11,7 @@ proc toRGB*(vec: Vec3[float32]): Vec3[float32] =
 
 
 template clearColorRGB*(rgb: Vec3[float32], alpha: float32) =
-  glClearColor(rgb.r, rgb.b, rgb.b, alpha)
+  glClearColor(rgb.r, rgb.g, rgb.b, alpha)
 
 
 template genVertexArrays*(n: GLsizei): var uint32 =
@@ -33,7 +33,7 @@ template checkResult*(id: uint32, checkType: untyped, checkExeType: GLenum) =
     var infoLogLength: int32
     `glGet checkType iv`(id, GL_INFO_LOG_LENGTH, infoLogLength.addr)
     if infoLogLength > 0:
-      var message: cstring = newString(infoLogLength)
+      var message = newString(infoLogLength).cstring
       `glGet checkType InfoLog`(id, infoLogLength, nil, message[0].addr)
       if message[0] != '\0':
         echo "<" & astToStr(checkType InfoLog) & ">"
@@ -64,10 +64,10 @@ template linkProgram*(shaders: varargs[uint32]): uint32 =
     glAttachShader(programID, shader);
   glLinkProgram(programID);
   programID.checkResult(Program, GL_LINK_STATUS)
-  
+
   # detach and delete shader
   for shader in shaders:
     glDetachShader(programID, shader);
     glDeleteShader(shader)
-  
+
   programID

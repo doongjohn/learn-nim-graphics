@@ -23,24 +23,3 @@ macro `...`*(args: varargs[typed]): untyped =
     for i in 0 ..< impl[2][0].len - 1:
       result[0].add quote do:
         `sym`[`idx`].arr[`i`]
-
-
-# template `...`*[N, T; V: Vec[N, T]](args: openArray[V]): auto =
-#   var result: array[args.len * 3, T]
-#   var i = 0
-#   for arg in args:
-#     for n in 0 ..< N:
-#       result[i] = arg.arr[n]
-#       inc i
-#   result
-
-
-# template `...@`*[N, T; V: Vec[N, T]](args: openArray[V]): auto =
-#   var result: seq[T]
-#   var i = 0
-#   for arg in args:
-#     for n in 0 ..< N:
-#       result &= arg.arr[n]
-#       inc i
-#   result
-

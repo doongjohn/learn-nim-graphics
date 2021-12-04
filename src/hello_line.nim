@@ -49,7 +49,7 @@ proc main* =
     positions[0],
     positions[1]
   )
-  
+
   var vao = gl.genVertexArrays(1)
   var vbo = gl.genBuffers(1)
   var ebo = gl.genBuffers(1)
@@ -78,7 +78,7 @@ proc main* =
     # clear background
     gl.clearColorRGB(colors.bg, 1)
     glClear(GL_COLOR_BUFFER_BIT)
-    
+
     # apply shader
     glUseProgram(programID)
     glUniform3fv(uColor, 1, colors.square.caddr)
@@ -96,13 +96,13 @@ proc main* =
       vertices[5] = dir.z
       glBufferData(GL_ARRAY_BUFFER, cint(sizeof(cfloat) * vertices.len), vertices[0].addr, GL_DYNAMIC_DRAW)
       glDrawArrays(GL_LINES, 0, 2)
-    
+
     # swap buffers
     w.swapBuffers()
-    
+
     # poll events
     glfwPollEvents()
-  
+
   # app exit
   w.destroyWindow()
   glfwTerminate()

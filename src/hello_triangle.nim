@@ -5,13 +5,27 @@ import utils
 import utils/gl
 
 
-proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
-  if key == GLFWKey.Escape and action == GLFWPress:
-    window.setWindowShouldClose(true)
+const clearColors = [vec3f(200, 210, 250), vec3f(250, 210, 200)]
+var clearColorN = 0
+var clearColor = clearColors[clearColorN]
+
+
+proc onKeyboard(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
+  if action != GLFWPress: return
+
+  case key
+  of GLFWKey.Escape:
+    window.setWindowShouldClose true
+  of GLFWKey.Enter:
+    clearColorN = (clearColorN + 1) mod 2
+    clearColor = clearColors[clearColorN]
+  else:
+    discard
+
 
 
 proc main* =
-  # init GLFW
+  # GLFW init
   doAssert glfwInit()
 
   # GLFW settings
@@ -21,14 +35,15 @@ proc main* =
   glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE) # We don't want the old OpenGL
   glfwWindowHint(GLFWResizable, GLFW_FALSE) # disable window resize
 
-  # create window
+  # GLFW create window
   let w: GLFWWindow = glfwCreateWindow(800, 600, "NimGL", nil, nil)
   doAssert w != nil
-
-  discard w.setKeyCallback(keyProc)
   w.makeContextCurrent()
 
-  # init OpenGL
+  # GLFW set input callback
+  discard w.setKeyCallback onKeyboard
+
+  # OpenGL init
   doAssert glInit()
   gl.printOpenGLVersion()
 
@@ -52,7 +67,7 @@ proc main* =
   # create vao
   var vao = gl.genVertexArrays(1)
   glBindVertexArray(vao)
-  
+
   # create vbo
   var vbo = gl.genBuffers(1)
   glBindBuffer(GL_ARRAY_BUFFER, vbo)
@@ -61,15 +76,15 @@ proc main* =
   # set vertex positions
   glEnableVertexAttribArray(0)
   glVertexAttribPointer(0, 3, EGL_FLOAT, false, 7 * sizeof(cfloat), nil)
-  
+
   # set vertex colors
   glEnableVertexAttribArray(1)
   glVertexAttribPointer(1, 4, EGL_FLOAT, false, 7 * sizeof(cfloat), cast[pointer](3 * sizeof(cfloat)))
-  
+
   # deselect vbo, vao
   glBindBuffer(GL_ARRAY_BUFFER, 0)
   glBindVertexArray(0)
-  
+
   # compile shaders
   let programID = linkProgram(
     compileShader(GL_VERTEX_SHADER, ~"shaders/triangle/vertex_shader.glsl"),
@@ -78,27 +93,26 @@ proc main* =
 
   # app main loop
   while not w.windowShouldClose:
+    # poll events
+    glfwPollEvents()
+
     # clear background
-    gl.clearColorRGB(vec3f(33, 33, 33).toRGB, 1f)
+    gl.clearColorRGB(clearColor.toRGB, 1f)
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
-    
+
     # use shader
     glUseProgram(programID)
 
     # select vao
     glBindVertexArray(vao)
     glDrawArrays(GL_TRIANGLES, 0, 3) # draw triangle
-    
+
     # deselect vao
     glBindVertexArray(0)
 
-    
     # swap buffers
     w.swapBuffers()
 
-    # poll events
-    glfwPollEvents()
-    
   # app exit
   w.destroyWindow()
   glfwTerminate()
